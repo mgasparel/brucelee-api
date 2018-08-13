@@ -1,9 +1,10 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using System;
 using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Brucelee.Quotes
@@ -11,7 +12,7 @@ namespace Brucelee.Quotes
     public static class GetRandomQuote
     {
         [FunctionName("GetRandomQuote")]
-        public static async Task<string> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req,
+        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequestMessage req,
             [Blob("$root/quotes.txt", FileAccess.Read)] Stream myBlob,
             TraceWriter log)
         {
@@ -39,7 +40,10 @@ namespace Brucelee.Quotes
 
             log.Info($"get quote at index {index}");
 
-            return lines[index];
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(lines[index])
+            };
         }
     }
 }
